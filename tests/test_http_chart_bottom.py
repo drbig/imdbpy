@@ -1,34 +1,38 @@
-from pytest import fixture
-
-from imdb.parser.http.topBottomParser import DOMHTMLBottom100Parser
-
-
-@fixture(scope='module')
-def chart_bottom(url_opener, base_url):
-    """A function to retrieve the bottom movies page."""
-    def retrieve():
-        url = base_url + '/chart/bottom'
-        return url_opener.retrieve_unicode(url)
-    return retrieve
+def test_bottom_chart_should_contain_100_entries(ia):
+    chart = ia.get_bottom100_movies()
+    assert len(chart) == 100
 
 
-parser = DOMHTMLBottom100Parser()
+def test_bottom_chart_entries_should_have_rank(ia):
+    movies = ia.get_bottom100_movies()
+    assert movies[0]['bottom 100 rank'] == 1
 
 
-def test_chart_should_contain_100_movies(chart_bottom):
-    page = chart_bottom()
-    data = parser.parse(page)['data']
-    assert len(data) == 100
+def test_bottom_chart_entries_should_have_movie_id(ia):
+    movies = ia.get_bottom100_movies()
+    assert movies[0].movieID == '4458206'
 
 
-def test_all_movies_should_have_rating_and_votes(chart_bottom):
-    page = chart_bottom()
-    data = parser.parse(page)['data']
-    for movie in dict(data).values():
-        assert {'title', 'kind', 'year', 'rating', 'votes'}.issubset(set(movie.keys()))
+def test_bottom_chart_entries_should_have_title(ia):
+    movies = ia.get_bottom100_movies()
+    assert movies[0]['title'] == 'Code Name: K.O.Z.'
 
 
-def test_chart_should_contain_correct_movie(chart_bottom):
-    page = chart_bottom()
-    data = parser.parse(page)['data']
-    assert '0060666' in dict(data)          # Manos
+def test_bottom_chart_entries_should_have_kind(ia):
+    movies = ia.get_bottom100_movies()
+    assert movies[0]['kind'] == 'movie'
+
+
+def test_bottom_chart_entries_should_have_year(ia):
+    movies = ia.get_bottom100_movies()
+    assert movies[0]['year'] == 2015
+
+
+def test_bottom_chart_entries_should_have_rating(ia):
+    movies = ia.get_bottom100_movies()
+    assert movies[0]['rating'] < 1.6
+
+
+def test_bottom_chart_entries_should_have_votes(ia):
+    movies = ia.get_bottom100_movies()
+    assert movies[0]['votes'] > 25000

@@ -1,34 +1,38 @@
-from pytest import fixture
-
-from imdb.parser.http.topBottomParser import DOMHTMLTop250Parser
-
-
-@fixture(scope='module')
-def chart_top(url_opener, base_url):
-    """A function to retrieve the top movies page."""
-    def retrieve():
-        url = base_url + '/chart/top'
-        return url_opener.retrieve_unicode(url)
-    return retrieve
+def test_top_chart_should_contain_250_entries(ia):
+    chart = ia.get_top250_movies()
+    assert len(chart) == 250
 
 
-parser = DOMHTMLTop250Parser()
+def test_top_chart_entries_should_have_rank(ia):
+    movies = ia.get_top250_movies()
+    assert movies[0]['top 250 rank'] == 1
 
 
-def test_chart_should_contain_250_movies(chart_top):
-    page = chart_top()
-    data = parser.parse(page)['data']
-    assert len(data) == 250
+def test_top_chart_entries_should_have_movie_id(ia):
+    movies = ia.get_top250_movies()
+    assert movies[0].movieID == '0111161'
 
 
-def test_all_movies_should_have_rating_and_votes(chart_top):
-    page = chart_top()
-    data = parser.parse(page)['data']
-    for movie in dict(data).values():
-        assert {'title', 'kind', 'year', 'rating', 'votes'}.issubset(set(movie.keys()))
+def test_top_chart_entries_should_have_title(ia):
+    movies = ia.get_top250_movies()
+    assert movies[0]['title'] == 'The Shawshank Redemption'
 
 
-def test_chart_should_contain_correct_movie(chart_top):
-    page = chart_top()
-    data = parser.parse(page)['data']
-    assert '0133093' in dict(data)      # The Matrix
+def test_top_chart_entries_should_have_kind(ia):
+    movies = ia.get_top250_movies()
+    assert movies[0]['kind'] == 'movie'
+
+
+def test_top_chart_entries_should_have_year(ia):
+    movies = ia.get_top250_movies()
+    assert movies[0]['year'] == 1994
+
+
+def test_top_chart_entries_should_have_rating(ia):
+    movies = ia.get_top250_movies()
+    assert movies[0]['rating'] > 9
+
+
+def test_top_chart_entries_should_have_votes(ia):
+    movies = ia.get_top250_movies()
+    assert movies[0]['votes'] > 1900000
